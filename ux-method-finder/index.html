@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UX Research Method Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+    </style>
+</head>
+<body>
+    <ux-research-method-quiz></ux-research-method-quiz>
+
+    <script>
+    // Define the UXResearchMethodQuiz web component
+    class UXResearchMethodQuiz extends HTMLElement {
+        constructor() {
+            super();
+            this.attachShadow({ mode: 'open' });
+            this.selectedQuestion = null;
+        }
+
+        connectedCallback() {
+            this.render();
+        }
+
+        render() {
+            this.shadowRoot.innerHTML = `
+                <style>
+                    .card {
+                        border: 1px solid #e2e8f0;
+                        border-radius: 0.5rem;
+                        padding: 1rem;
+                        margin-bottom: 1rem;
+                        background-color: white;
+                        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+                    }
+                    .grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                        gap: 1rem;
+                    }
+                    .question-card {
+                        cursor: pointer;
+                        transition: background-color 0.2s, color 0.2s, transform 0.2s, box-shadow 0.2s;
+                        background-color: var(--bg-color);
+                        color: var(--text-color);
+                    }
+                    .question-card:hover {
+                        transform: translateY(-3px);
+                        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                        background-color: var(--text-color);
+                        color: var(--bg-color);
+                    }
+                    .button {
+                        background-color: #3b82f6;
+                        color: white;
+                        padding: 0.5rem 1rem;
+                        border-radius: 0.25rem;
+                        cursor: pointer;
+                        border: none;
+                        font-size: 1rem;
+                        transition: background-color 0.2s;
+                    }
+                    .button:hover {
+                        background-color: #2563eb;
+                    }
+                    .method-card {
+                        background-color: #f9fafb;
+                        padding: 1rem;
+                        margin-bottom: 1rem;
+                    }
+                    .method-card .card {
+                        padding: 1rem 0;
+                        background-color: transparent;
+                        margin-bottom: 1rem;
+                        border: none;
+                        box-shadow: none;
+                    }
+                    h2 {
+                        color: #1f2937;
+                    }
+                    h3 {
+                        color: #374151;
+                    }
+                </style>
+                <div id="content">
+                    ${this.selectedQuestion ? this.renderMethods() : this.renderQuestions()}
+                </div>
+            `;
+
+            this.setupEventListeners();
+        }
+
+        renderQuestions() {
+            return `
+                <div class="card">
+                    <h2>UX Research Method Finder</h2>
+                    <p>Select a question to find the right UX research method:</p>
+                    <div class="grid">
+                        ${questions.map((question, index) => `
+                            <div class="card question-card" data-question="${question}" style="--bg-color: ${colorPairs[index % colorPairs.length].bg}; --text-color: ${colorPairs[index % colorPairs.length].text};">
+                                <p style="text-align: center; white-space: pre-line;">${question}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        renderMethods() {
+            const methods = methodsData[this.selectedQuestion];
+
+            if (!methods || methods.length === 0) {
+                return `
+                    <div class="card">
+                        <button class="button" id="backButton">← Back to Questions</button>
+                        <h2>Recommended Methods</h2>
+                        <p>${this.selectedQuestion}</p>
+                        <p>No methods available for this question.</p>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="card">
+                    <button class="button" id="backButton">← Back to questions</button>
+                    <h2>Recommended Methods</h2>
+                    <p>${this.selectedQuestion}</p>
+                    ${methods.map(method => `
+                        <div class="card method-card">
+                            <h3>${method.method}</h3>
+                            <div class="card">
+                                <p>${method.description}</p>
+                            </div>
+                            <p>Design Phase: ${method.phase}</p>
+                            <p>Analysis Focus: ${method.focus}</p>
+                            <p>Data Collection: ${method.collection}</p>
+                            <p>Cost: ${method.cost}</p>
+                            <p>Time: ${method.time}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        setupEventListeners() {
+            if (!this.selectedQuestion) {
+                this.shadowRoot.querySelectorAll('.question-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        this.selectedQuestion = card.dataset.question;
+                        this.render();
+                    });
+                });
+            } else {
+                const backButton = this.shadowRoot.getElementById('backButton');
+                if (backButton) {
+                    backButton.addEventListener('click', () => {
+                        this.selectedQuestion = null;
+                        this.render();
+                    });
+                }
+            }
+        }
+    }
+
+    // Data
+    const questions = [
+        "🐞\nAre there problems in the interface?",
+        "🔍\nWhere do people look for information?",
+        "⚖️\nHow does our product compare to competitors?",
+        "💡\nWhat features do people want?",
+        "🤔\nIs a new interface better than an alternative?",
+        "⚠️\nWhat problems do people have as they use our product?",
+        "📚\nHow do we organize content and features?"
+    ];
+
+    const colorPairs = [
+        { bg: "#f0f4ff", text: "#1e40af" },
+        { bg: "#fff1f2", text: "#9f1239" },
+        { bg: "#f0fdf4", text: "#166534" },
+        { bg: "#fefce8", text: "#854d0e" },
+        { bg: "#faf5ff", text: "#6b21a8" },
+        { bg: "#fff7ed", text: "#9a3412" },
+        { bg: "#f1f5f9", text: "#334155" }
+    ];
+
+    const methodsData = {
+        "🐞\nAre there problems in the interface?": [
+            { 
+                method: "Formative Usability Testing", 
+                phase: "💡 ✏️", 
+                focus: "📋", 
+                collection: "👀", 
+                cost: "$$", 
+                time: "⏱⏱⏱",
+                description: "Observing users as they attempt to complete tasks with a product. It helps identify usability problems in the user interface and overall design."
+            },
+            { 
+                method: "Heuristic Evaluation", 
+                phase: "💡 ✏️", 
+                focus: "📋", 
+                collection: "📋", 
+                cost: "$", 
+                time: "⏱⏱",
+                description: "Experts evaluate the interface against established usability principles. It's a quick and cost-effective way to identify potential usability issues."
+            },
+            { 
+                method: "Observation", 
+                phase: "💡 ✏️", 
+                focus: "📋", 
+                collection: "👀", 
+                cost: "$$", 
+                time: "⏱⏱⏱",
+                description: "Watching users interact with a product in their natural environment. It provides insights into how users actually use the product and what problems they encounter."
+            }
+        ],
+        "🔍\nWhere do people look for information?": [
+            {
+                method: "Eye Tracking",
+                phase: "💡 ✏️",
+                focus: "📊",
+                collection: "👀",
+                cost: "$$$",
+                time: "⏱⏱⏱",
+                description: "Tracks users' eye movements to understand where they look on an interface and in what order."
+            },
+            {
+                method: "Click Testing",
+                phase: "💡 ✏️",
+                focus: "📊",
+                collection: "📋",
+                cost: "$",
+                time: "⏱⏱",
+                description: "Users are shown a design and asked where they would click to complete a specific task."
+            },
+            {
+                method: "Tree Testing",
+                phase: "💡 ✏️",
+                focus: "📊",
+                collection: "📋",
+                cost: "$",
+                time: "⏱⏱",
+                description: "Users are given tasks to find specific information within a text-only version of your site's menu structure."
+            }
+        ],
+        "⚖️\nHow does our product compare to competitors?": [
+            {
+                method: "Competitive Analysis",
+                phase: "💡",
+                focus: "📋",
+                collection: "📋",
+                cost: "$$",
+                time: "⏱⏱⏱",
+                description: "Systematically assess the strengths and weaknesses of current and potential competitors."
+            },
+            {
+                method: "Benchmark Testing",
+                phase: "💡 ✏️",
+                focus: "📊",
+                collection: "👀",
+                cost: "$$$",
+                time: "⏱⏱⏱",
+                description: "Compare your product's performance against competitors by having users complete the same tasks on different products."
+            },
+            {
+                method: "PURE (Pragmatic Usability Rating by Experts)",
+                phase: "💡 ✏️",
+                focus: "📊",
+                collection: "📋",
+                cost: "$$",
+                time: "⏱⏱",
+                description: "Experts evaluate products based on specific criteria, allowing for systematic comparison."
+            }
+        ],
+        "💡\nWhat features do people want?": [
+            {
+                method: "User Interviews",
+                phase: "💡",
+                focus: "📋",
+                collection: "👀",
+                cost: "$$",
+                time: "⏱⏱",
+                description: "One-on-one conversations with users to understand their needs, motivations, and pain points."
+            },
+            {
+                method: "Surveys",
+                phase: "💡",
+                focus: "📊",
+                collection: "📋",
+                cost: "$",
+                time: "⏱⏱",
+                description: "Collect quantitative data from a large number of users about their feature preferences and needs."
+            },
+            {
+                method: "Feature Prioritization",
+                phase: "💡",
+                focus: "📊",
+                collection: "📋",
+                cost: "$",
+                time: "⏱",
+                description: "Ask users to rank or rate potential features to understand which are most important to them."
+            }
+        ],
+        "🤔\nIs a new interface better than an alternative?": [
+            {
+                method: "A/B Testing",
+                phase: "✏️",
+                focus: "📊",
+                collection: "👀",
+                cost: "$$",
+                time: "⏱⏱⏱",
+                description: "Compare two versions of an interface by randomly assigning users to each version and measuring performance metrics."
+            },
+            {
+                method: "Preference Testing",
+                phase: "✏️",
+                focus: "📊",
+                collection: "📋",
+                cost: "$",
+                time: "⏱⏱",
+                description: "Show users multiple design options and ask which they prefer and why."
+            },
+            {
+                method: "Usability Testing",
+                phase: "✏️",
+                focus: "📋",
+                collection: "👀",
+                cost: "$$",
+                time: "⏱⏱⏱",
+                description: "Observe users as they attempt to complete tasks with each interface option."
+            }
+        ],
+        "⚠️\nWhat problems do people have as they use our product?": [
+            {
+                method: "Usability Testing",
+                phase: "💡 ✏️",
+                focus: "📋",
+                collection: "👀",
+                cost: "$$",
+                time: "⏱⏱⏱",
+                description: "Observe users as they attempt to complete tasks with the product, identifying issues they encounter."
+            },
+            {
+                method: "Diary Studies",
+                phase: "💡 ✏️",
+                focus: "📋",
+                collection: "📋",
+                cost: "$$",
+                time: "⏱⏱⏱",
+                description: "Users record their experiences and problems with the product over an extended period."
+            },
+            {
+                method: "Customer Support Analysis",
+                phase: "💡 ✏️",
+                focus: "📊",
+                collection: "📋",
+                cost: "$",
+                time: "⏱⏱",
+                description: "Analyze customer support tickets or calls to identify common issues users are experiencing."
+            }
+        ],
+        "📚\nHow do we organize content and features?": [
+            {
+                method: "Card Sorting",
+                phase: "💡 ✏️",
+                focus: "📋",
+                collection: "👀",
+                cost: "$$",
+                time: "⏱⏱",
+                description: "Users group and categorize content or features, helping to create intuitive information architecture."
+            },
+            {
+                method: "Tree Testing",
+                phase: "✏️",
+                focus: "📊",
+                collection: "📋",
+                cost: "$",
+                time: "⏱⏱",
+                description: "Users attempt to find items in a text-only version of a site's structure, validating the effectiveness of the proposed organization."
+            },
+            {
+                method: "Content Audit",
+                phase: "💡",
+                focus: "📋",
+                collection: "📋",
+                cost: "$$",
+                time: "⏱⏱⏱",
+                description: "Systematically review and analyze all content on a website or within a product."
+            }
+        ]
+    };
+
+    // Register the custom element
+    customElements.define('ux-research-method-quiz', UXResearchMethodQuiz);
+
+    // Ensure the component is rendered
+    document.addEventListener('DOMContentLoaded', () => {
+        const quizElement = document.querySelector('ux-research-method-quiz');
+        if (quizElement && !quizElement.shadowRoot.querySelector('#content')) {
+            quizElement.render();
+        }
+    });
+    </script>
+</body>
+</html>
